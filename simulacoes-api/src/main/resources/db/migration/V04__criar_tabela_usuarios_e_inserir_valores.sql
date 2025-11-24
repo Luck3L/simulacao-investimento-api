@@ -13,4 +13,4 @@ ALTER TABLE dbo.tb_usuario ADD CONSTRAINT
 
 GO
 
-INSERT INTO dbo.tb_usuario VALUES('usuario', '$2a$10$ZLS.jDf9YYcYFG7nWIHrE.cIkDTuGnm30X17bJ83Yx0rjhYuaTvWO')
+INSERT INTO dbo.tb_usuario VALUES('usuario', '$2a$12$daUuPhuXcQHkVZhoGHcjoeO4xYrWsGl3gDWntewgka12Wfa80cfba')

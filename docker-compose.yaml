@@ -1,24 +1,10 @@
 services:
-  app:
-    build:
-      context: ./simulacoes-api
-      dockerfile: Dockerfile
-    container_name: simulacoes_api
-    ports:
-      - "8080:8080"
-    environment:
-      DB_URL: jdbc:sqlserver://localhost:1433;encrypt=false;trustServerCertificate=true;databaseName=simulacao
-      DB_USERNAME: sa
-      DB_PASSWORD: Senha@123admin
-    depends_on:
-      - mssql
-    restart: on-failure
-    
   mssql:
     build:
       context: ./sqlserver
       dockerfile: Dockerfile
     container_name: sqlserver_simulacao
+    user: "10001:0"
     environment:
       SA_PASSWORD: "Senha@123admin" 
       ACCEPT_EULA: "Y"
@@ -26,8 +12,33 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - sqlserver_data:/var/opt/mssql/data
+      - ./sqlserver/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "SA", "-P", "Senha@123admin", "-Q", "SELECT 1"]
+      interval: 10s
+      retries: 10 
     restart: always
+    networks:
+      - simulacoes-api-net
 
-volumes:
-  sqlserver_data:
+  api:
+    build:
+      context: ./simulacoes-api
+      dockerfile: Dockerfile
+    container_name: simulacoes_api
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:sqlserver://mssql:1433;encrypt=false;trustServerCertificate=true;databaseName=simulacao
+      DB_USERNAME: usr_simulacao
+      DB_PASSWORD: simulacao_usr
+    depends_on:
+      mssql:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - simulacoes-api-net    
+
+networks:
+  simulacoes-api-net:
+    driver: bridge
